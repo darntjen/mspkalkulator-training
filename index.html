@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -164,6 +165,8 @@
     .btn-submit{width:100%;padding:12px;background:var(--green);color:#0b1624;border-radius:6px;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:background .15s;}
     .btn-submit:hover{background:#7dd65e;}
     .btn-submit:disabled{background:var(--bg3);color:var(--text3);cursor:not-allowed;}
+    .btn-reset{width:100%;margin-top:8px;padding:10px;background:transparent;color:var(--text2);border:1px solid var(--border2);border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:all .15s;}
+    .btn-reset:hover{border-color:var(--text2);color:var(--text);}
 
     /* ── FEEDBACK ── */
     .feedback-wrap{margin-top:18px;}
@@ -263,6 +266,28 @@ function pickScenario(idx){ currentSc=idx; selections={}; userQty={}; submitted=
 function backToTg(){ phase='tg'; activeTg=null; activeSg=null; currentSc=null; render(); window.scrollTo({top:0,behavior:'smooth'}); }
 function backToSg(){ phase='sg'; activeSg=null; currentSc=null; render(); window.scrollTo({top:0,behavior:'smooth'}); }
 function backToPick(){ phase='pick'; submitted=false; selections={}; userQty={}; render(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ── Auswertung auslösen ───────────────────────────────────────────────────────
+function doSubmit(){
+  if(submitted) return;
+  const hasAny = Object.values(selections).some(v=>v);
+  if(!hasAny) return;
+  submitted = true;
+  render();
+  setTimeout(()=>{
+    const fb = document.getElementById('feedback');
+    if(fb) fb.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 50);
+}
+
+// ── Auswahl im aktuellen Fall zurücksetzen ────────────────────────────────────
+function resetQuiz(){
+  selections = {};
+  userQty    = {};
+  submitted  = false;
+  render();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 
 function selectItem(id){
   if(submitted) return;
@@ -601,6 +626,7 @@ function renderQuiz(){
     <button class="btn-submit" onclick="doSubmit()" ${submitted||!hasAny?'disabled':''}>
       ${submitted?'Angebot ausgewertet ✓':'Angebot abgeben &amp; auswerten →'}
     </button>
+    ${(hasAny||submitted)?`<button class="btn-reset" onclick="resetQuiz()">↺ Auswahl zurücksetzen</button>`:''}
   </div>`;
 
   // Feedback
@@ -624,6 +650,7 @@ function renderQuiz(){
       ${(wRows||mRows)?`<div class="fb-sec fbs-r"><div class="fb-sec-title">✗ Falsch / Fehlend (${fb.wrong.length+fb.missing.length})</div>${wRows}${mRows}</div>`:''}
       ${uRows?`<div class="fb-sec fbs-b"><div class="fb-sec-title">ℹ Upsell-Chancen, Empfehlungen &amp; Preistipps</div>${uRows}</div>`:''}
       <div class="fb-nav">
+        <button class="btn-next" onclick="resetQuiz()">↺ Diesen Fall erneut</button>
         <button class="btn-next" onclick="backToPick()">← Fallauswahl</button>
         <button class="btn-next" onclick="pickScenario(${nextGi})">Nächster Fall → ${SC[nextGi].name}</button>
       </div>
